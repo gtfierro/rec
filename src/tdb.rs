@@ -57,6 +57,20 @@ impl TDB {
         }
     }
 
+    pub fn query(&self, query: String) {
+        let mut stmt = self.conn.prepare(query.as_ref()).unwrap();
+        let data_iter = stmt.query_map(&[], |row| {
+            Record {
+                collection: row.get(0),
+                time: row.get(1),
+                value: row.get(2)
+            }
+        }).unwrap();
+        for record in data_iter {
+            println!("{}", record.unwrap());
+        }
+    }
+
     pub fn all(&self, collection: String) {
         let mut stmt = self.conn.prepare("SELECT collection, time, value FROM data WHERE collection = ?1;").unwrap();
         let data_iter = stmt.query_map(&[&collection], |row| {

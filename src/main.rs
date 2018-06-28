@@ -3,8 +3,10 @@ extern crate chrono;
 extern crate rusqlite;
 extern crate time;
 mod tdb;
+mod query;
 
 use tdb::{TDB, Record};
+use query::{query_to_sql};
 use std::process;
 use clap::{Arg, App, SubCommand, AppSettings};
 use chrono::prelude::*;
@@ -43,6 +45,9 @@ fn main() {
                             .about("query the data")
                             .arg(Arg::with_name("collection")
                                 .index(1)
+                                .required(true))
+                            .arg(Arg::with_name("query")
+                                .index(2)
                                 .required(true))
                         );
     let matches = app.get_matches();
@@ -135,8 +140,14 @@ fn main() {
             }
         },
         ("query", Some(_matches)) => {
-            //let collection = matches.value_of("collection").unwrap().to_string();
-            println!("query")
+            let collection = _matches.value_of("collection").unwrap().to_string();
+            println!("query collection: {}", collection);
+            let mut terms : Vec<String> = _matches.value_of("query")
+                .unwrap()
+                .split(" ")
+                .map(|x| x.to_string())
+                .collect();
+            db.query(query_to_sql(collection, terms));
         },
         _ => {
         },
