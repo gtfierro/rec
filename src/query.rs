@@ -4,13 +4,6 @@
  * rec query <collection> <col1> <query>
  *
  * query:
- * < 3.4
- * > 4.5
- * <= 700
- * => 800
- * == .9
- * and
- * or
  */
 
 pub fn query_to_sql(collection: String, tokens: Vec<String>) -> String {
@@ -20,17 +13,18 @@ pub fn query_to_sql(collection: String, tokens: Vec<String>) -> String {
         match tokeniterator.next() {
             Some(token) => {
                 match token.to_lowercase().as_ref() {
-                    op @ "<" | op @ ">" | op @ "<=" | op @ ">=" => {
+                    op @ "<" | op @ ">" | op @ "<=" | op @ ">=" | op @ "=" => {
                         match tokeniterator.next() {
                             Some(valuetoken) => {
                                 query.push_str(&format!(" value {} {} ", op, valuetoken));
                             },
                             None => { break }
                         }
+                    },
+                    op @ "and" | op @ "or" => { query.push_str(&format!(" {} ", op)); }
+                    _ => {
+                        break
                     }
-                    "and" => { query.push_str(" and "); },
-                    "or" => { query.push_str(" or "); },
-                    val => { println!("value: {}", val); }
                 }
             },
             None => { break }
