@@ -2,7 +2,7 @@ extern crate rusqlite;
 extern crate chrono;
 
 use rusqlite::{Connection, Error};
-use std::fmt;
+use std::{fmt, env};
 use chrono::prelude::*;
 use chrono::{DateTime, Utc};
 
@@ -12,8 +12,9 @@ pub struct TDB {
 }
 
 impl TDB {
-    pub fn new() -> Result<TDB, Error> {
-        match Connection::open("rec.sqlite3") {
+    pub fn new_with_location(location: String) -> Result<TDB, Error> {
+        println!("Using database at {}", location);
+        match Connection::open(location) {
             Ok(conn) => {
                 conn.execute("CREATE TABLE IF NOT EXISTS data (
                     id          INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -25,6 +26,13 @@ impl TDB {
             },
             Err(error) => Err(error)
         }
+    }
+
+    pub fn new() -> Result<TDB, Error> {
+        //println!("Using database at {}/rec.sqlite3", env::current_dir().unwrap().display());
+        let mut curdir = env::current_dir().unwrap();
+        curdir.push("rec.sqlite3");
+        TDB::new_with_location(curdir.into_os_string().into_string().unwrap())
     }
 
     pub fn add(&self, rec: Record) {
@@ -98,7 +106,7 @@ impl fmt::Display for Record {
         let secs = self.time / 1e9 as i64;
         let nsecs = self.time  - (secs * 1e9 as i64);
         let formatted_time = DateTime::<Utc>::from_utc(NaiveDateTime::from_timestamp(secs, nsecs as u32), Utc);
-        write!(f, "({},  {}, {})", self.collection, self.value, formatted_time.to_rfc2822())
+        write!(f, "{},{},{}", self.collection, self.value, formatted_time.to_rfc3339())
     }
 }
 

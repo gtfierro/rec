@@ -5,15 +5,20 @@ extern crate time;
 mod tdb;
 mod query;
 
+// TODO: add file location argument
+
 use tdb::{TDB, Record};
 use query::{query_to_sql};
-use std::process;
+use std::{process, env};
 use clap::{Arg, App, SubCommand, AppSettings};
 use chrono::prelude::*;
 
 fn main() {
 
-    let db = TDB::new().unwrap();
+    let db = match env::var("REC_DB_LOCATION") {
+        Ok(val) => TDB::new_with_location(val).unwrap(),
+        Err(_e) => TDB::new().unwrap()
+    };
 
     let app = App::new("Rec")
                         .version("0.1.0")
@@ -141,7 +146,7 @@ fn main() {
         },
         ("query", Some(_matches)) => {
             let collection = _matches.value_of("collection").unwrap().to_string();
-            println!("query collection: {}", collection);
+            //println!("query collection: {}", collection);
             let mut terms : Vec<String> = _matches.value_of("query")
                 .unwrap()
                 .split(" ")
