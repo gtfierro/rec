@@ -147,7 +147,7 @@ fn main() {
         ("query", Some(_matches)) => {
             let collection = _matches.value_of("collection").unwrap().to_string();
             //println!("query collection: {}", collection);
-            let mut terms : Vec<String> = _matches.value_of("query")
+            let terms : Vec<String> = _matches.value_of("query")
                 .unwrap()
                 .split(" ")
                 .map(|x| x.to_string())
